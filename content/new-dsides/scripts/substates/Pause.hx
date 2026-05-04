@@ -2,9 +2,13 @@ import haxe.Json;
 import sys.io.File;
 import funkin.utils.CameraUtil;
 import flixel.text.FlxText;
+import flixel.text.FlxTextAlign;
+import flixel.text.FlxTextBorderStyle;
 import flixel.addons.text.FlxTypeText;
 import flixel.addons.display.FlxBackdrop;
 import flixel.sound.FlxSound;
+import flixel.util.FlxColor;
+import flixel.FlxG;
 import funkin.backend.Difficulty;
 import funkin.states.StoryMenuState;
 import funkin.states.FreeplayState;
@@ -20,7 +24,8 @@ var controls = PlayerSettings.player1.controls;
 var allowControls = false;
 var curSelected = 0;
 var buttons:FlxTypedGroup;
-var options = ['resume', 'restart', 'practice', 'options', 'exit'];
+var botplayTxt:FlxText;
+var options = ['resume', 'restart', 'practice', 'botplay', 'options', 'exit'];
 
 function onCreate() {
 	var json = PluginsManager.callPluginFunc('Utils', 'loadJson', ['metadata', PlayState.SONG.song.toLowerCase()]);
@@ -170,9 +175,23 @@ function onCreate() {
 
 	songtxt = PluginsManager.callPluginFunc('Utils', 'menuIntroCard', ["Breakfast", 'selora789', [32, 0]]);
 	add(songtxt);
+
+botplayTxt = new FlxText(0, 0, 0, "BOTPLAY", 32);
+botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, FlxTextAlign.CENTER);
+botplayTxt.borderStyle = FlxTextBorderStyle.OUTLINE;
+botplayTxt.borderColor = FlxColor.BLACK;
+botplayTxt.borderSize = 2;
+botplayTxt.screenCenter(FlxAxes.X);
+botplayTxt.y = 20;
+botplayTxt.visible = PlayState.instance.botplay;
+botplayTxt.camera = PlayState.instance.camHUD;
+add(botplayTxt);
+
 }
 
 function onUpdate(elapsed) {
+	if (botplayTxt != null)
+        botplayTxt.visible = botplay;
 
 	if (pauseMusic.volume < 0.5)
 		pauseMusic.volume += 0.05 * elapsed;
@@ -240,6 +259,9 @@ function choose() {
 		case 'practice':
 			PlayState.instance.practiceMode = !PlayState.instance.practiceMode;
 			PlayState.changedDifficulty = true;
+		case 'botplay':
+			PlayState.instance.botplay = !PlayState.instance.botplay;
+			FlxG.sound.play(Paths.sound('confirmMenu'));
 		case 'options':
 			FlxG.sound.play(Paths.sound('confirmMenu'));
 			FlxG.switchState(() -> new OptionsState());
