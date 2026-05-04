@@ -315,6 +315,7 @@ jobs:
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
                 haxelib install lime
+                haxelib install extension-androidtools
             - name: Install Android SDK + NDK
               uses: android-actions/setup-android@v3
 
