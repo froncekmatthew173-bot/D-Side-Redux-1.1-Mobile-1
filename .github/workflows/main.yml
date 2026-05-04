@@ -56,7 +56,7 @@ jobs:
 
       - name: Install Haxelib
         run: |
-          haxelib setup C:\Users\runneradmin\haxelib
+          haxelib setup C:\haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --global
           haxelib run hxpkg setup --global
