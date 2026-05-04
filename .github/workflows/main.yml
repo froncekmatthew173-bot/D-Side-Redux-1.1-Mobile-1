@@ -30,6 +30,9 @@ jobs:
           haxelib install hxpkg --global
           haxelib run hxpkg setup --global
           hxpkg install
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
           haxelib list
 
       - name: Compile
@@ -53,7 +56,11 @@ jobs:
 
       - name: Install Haxelib
         run: |
-          haxelib setup C:\Users\runneradmin\haxelib
+          haxelib setup C:\haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --global
+          haxelib run hxpkg setup --global
+          haxelib run hxpkg install
           haxelib install hxcpp --quiet
           haxelib install lime --quiet
           haxelib install openfl --quiet
@@ -86,7 +93,10 @@ jobs:
           haxelib install hxpkg --global
           haxelib run hxpkg setup --global
           hxpkg install
-
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib list
       - name: Compile
         run: haxelib run lime build mac -64 -D ${{ inputs.buildFlags }}
 
@@ -113,6 +123,10 @@ jobs:
           haxelib install hxpkg --global
           haxelib run hxpkg setup --global
           hxpkg install
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib list
 
       - name: Compile
         run: haxelib run lime build mac -arm64 -D ${{ inputs.buildFlags }}
@@ -143,8 +157,13 @@ jobs:
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
+          haxelib install hxpkg --global
+          haxelib run hxpkg setup --global
+          hxpkg install
+          haxelib install hxcpp --quiet
           haxelib install lime --quiet
           haxelib install openfl --quiet
+          haxelib list
 
       - name: Install Android SDK + NDK
         uses: android-actions/setup-android@v3
@@ -172,8 +191,13 @@ jobs:
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
+          haxelib install hxpkg --global
+          haxelib run hxpkg setup --global
+          hxpkg install
+          haxelib install hxcpp --quiet
           haxelib install lime --quiet
           haxelib install openfl --quiet
+          haxelib list
 
       - name: Build iOS
         run: haxelib run lime build ios -nosign -release
