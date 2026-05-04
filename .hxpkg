@@ -89,7 +89,11 @@
             {
                 "name": "json2object",
                 "version": "3.11.0"
-            }
+            },
+            {
+                "name": "hxjsonast",
+                "version": "1.1.0"
+            {
         ]
     }
 ]
