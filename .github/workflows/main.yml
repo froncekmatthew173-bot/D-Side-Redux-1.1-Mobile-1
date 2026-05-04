@@ -162,7 +162,8 @@ jobs:
           hxpkg install
           haxelib install hxcpp --quiet
           haxelib install lime --quiet
-          haxelib install openfl --quiet          haxelib list
+          haxelib install openfl --quiet
+          haxelib list
 
       - name: Install Android SDK + NDK
         uses: android-actions/setup-android@v3
