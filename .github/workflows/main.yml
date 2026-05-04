@@ -55,8 +55,9 @@ jobs:
         run: |
           haxelib setup C:\Users\runneradmin\haxelib
           haxelib install hxcpp --quiet
-          haxelib install lime --quiet
-          haxelib install openfl --quiet
+          haxelib install hxpkg --global
+          haxelib run hxpkg setup --global
+          hxpkg install
           haxelib list
         shell: cmd
 
@@ -143,8 +144,10 @@ jobs:
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
-          haxelib install lime --quiet
-          haxelib install openfl --quiet
+          haxelib install hxpkg --global
+          haxelib run hxpkg setup --global
+          hxpkg install
+          haxelib list
 
       - name: Install Android SDK + NDK
         uses: android-actions/setup-android@v3
@@ -172,8 +175,10 @@ jobs:
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
-          haxelib install lime --quiet
-          haxelib install openfl --quiet
+          haxelib install hxpkg --global
+          haxelib run hxpkg setup --global
+          hxpkg install
+          haxelib list
 
       - name: Build iOS
         run: haxelib run lime build ios -nosign -release
