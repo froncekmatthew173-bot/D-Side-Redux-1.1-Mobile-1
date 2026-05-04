@@ -60,7 +60,7 @@ jobs:
           haxelib install hxcpp --quiet
           haxelib install hxpkg --global
           haxelib run hxpkg setup --global
-          hxpkg install
+          haxelib run hxpkg install
           haxelib install hxcpp --quiet
           haxelib install lime --quiet
           haxelib install openfl --quiet
