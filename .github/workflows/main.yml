@@ -25,22 +25,14 @@ jobs:
         with:
           haxe-version: 4.3.7
 
-      - name: Setup haxelib and libraries
+      - name: Prepare Windows Lime rebuild
         shell: pwsh
         run: |
           haxelib setup C:/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install json2object --quiet
           haxelib run hxpkg install
-
-      - name: Prepare Lime (Windows)
-        shell: pwsh
-        run: |
-          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib path lime
           haxelib run lime rebuild cpp -release
 
       - name: Build Windows
@@ -75,35 +67,53 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential gcc-13 g++-13 \
-            libasound2-dev libpulse-dev libjack-jackd2-dev \
-            libpipewire-0.3-dev libgl1-mesa-dev libegl1-mesa-dev \
-            libglu1-mesa-dev libdbus-1-dev libudev-dev \
-            libxkbcommon-dev libx11-dev libxext-dev libx11-xcb-dev \
-            libxfixes-dev libxss-dev libxrender-dev libxrandr-dev \
-            libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
-            libgbm-dev libdrm-dev libdecor-0-dev libvulkan-dev \
+            build-essential \
+            gcc-13 \
+            g++-13 \
+            vlc \
+            libvlc-dev \
+            libvlccore-dev \
+            vlc-bin \
+            libwayland-dev \
+            libwayland-bin \
+            wayland-protocols \
+            libasound2-dev \
+            libpulse-dev \
+            libjack-jackd2-dev \
+            libpipewire-0.3-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libglu1-mesa-dev \
+            libdbus-1-dev \
+            libudev-dev \
+            libxkbcommon-dev \
+            libx11-dev \
+            libxext-dev \
+            libx11-xcb-dev \
+            libxfixes-dev \
+            libxss-dev \
+            libxrender-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxxf86vm-dev \
+            libgbm-dev \
+            libdrm-dev \
+            libdecor-0-dev \
+            libvulkan-dev \
             pkg-config
 
-      - name: Setup haxelib and libraries
+      - name: Prepare Linux Lime rebuild
         env:
           CC: gcc-13
           CXX: g++-13
         run: |
+          set -euo pipefail
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install json2object --quiet
           haxelib run hxpkg install
-
-      - name: Prepare Lime (Linux)
-        env:
-          CC: gcc-13
-          CXX: g++-13
-        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
@@ -112,11 +122,12 @@ jobs:
           CC: gcc-13
           CXX: g++-13
         run: |
+          set -euo pipefail
           FLAGS='${{ inputs.buildFlags }}'
           if [ -z "$FLAGS" ]; then
-            haxelib run lime build linux -release
+            haxelib run lime build Project.xml linux -release
           else
-            haxelib run lime build linux -release -D"$FLAGS"
+            haxelib run lime build Project.xml linux -release -D"$FLAGS"
           fi
 
       - name: Upload Linux artifact
@@ -142,19 +153,12 @@ jobs:
           brew update
           brew install pkg-config
 
-      - name: Setup haxelib and libraries
+      - name: Prepare macOS Lime rebuild
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install json2object --quiet
           haxelib run hxpkg install
-
-      - name: Prepare Lime (macOS Intel)
-        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
@@ -162,9 +166,9 @@ jobs:
         run: |
           FLAGS='${{ inputs.buildFlags }}'
           if [ -z "$FLAGS" ]; then
-            haxelib run lime build mac -release -64
+            haxelib run lime build mac -64 -release
           else
-            haxelib run lime build mac -release -64 -D"$FLAGS"
+            haxelib run lime build mac -64 -release -D"$FLAGS"
           fi
 
       - name: Upload macOS Intel artifact
@@ -190,19 +194,12 @@ jobs:
           brew update
           brew install pkg-config
 
-      - name: Setup haxelib and libraries
+      - name: Prepare macOS Lime rebuild
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install json2object --quiet
           haxelib run hxpkg install
-
-      - name: Prepare Lime (macOS ARM)
-        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
@@ -210,9 +207,9 @@ jobs:
         run: |
           FLAGS='${{ inputs.buildFlags }}'
           if [ -z "$FLAGS" ]; then
-            haxelib run lime build mac -release -arm64
+            haxelib run lime build mac -arm64 -release
           else
-            haxelib run lime build mac -release -arm64 -D"$FLAGS"
+            haxelib run lime build mac -arm64 -release -D"$FLAGS"
           fi
 
       - name: Upload macOS ARM artifact
@@ -238,24 +235,17 @@ jobs:
         with:
           haxe-version: 4.3.7
 
-      - name: Setup haxelib and libraries
+      - name: Install Haxelib
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install json2object --quiet
           haxelib run hxpkg install
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
       - name: Install Android SDK + NDK
         uses: android-actions/setup-android@v3
-
-      - name: Prepare Lime (Android)
-        run: |
-          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-          haxelib run lime rebuild cpp -release
 
       - name: Build Android
         run: |
@@ -284,19 +274,12 @@ jobs:
         with:
           haxe-version: 4.3.7
 
-      - name: Setup haxelib and libraries
+      - name: Install Haxelib
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install json2object --quiet
           haxelib run hxpkg install
-
-      - name: Prepare Lime (iOS)
-        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
