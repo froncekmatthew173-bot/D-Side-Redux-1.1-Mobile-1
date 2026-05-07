@@ -143,19 +143,13 @@ jobs:
                 $CC --version
                 $CXX --version
                 haxelib setup ~/haxelib
-                haxelib install hxcpp > /dev/null --quiet
+                haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                rm -rf .haxelib/lime
-                git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
-                git -C .haxelib/lime/git fetch --all --tags --prune
-                git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
-                git -C .haxelib/lime/git submodule sync --recursive
-                git -C .haxelib/lime/git submodule update --init --recursive --force
-                haxelib dev lime .haxelib/lime/git
-                rm -rf .haxelib/lime/git/project/obj
-                rm -rf .haxelib/lime/git/ndll
-
+                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib run lime rebuild hxcpp windows -clean
+                haxelib run lime rebuild lime windows -clean
+                haxelib run lime rebuild cpp
             - name: Rebuild Linux Lime ndll
               env:
                 CC: gcc-13
@@ -228,21 +222,13 @@ jobs:
             - name: Prepare macOS Lime rebuild
               run: |
                 haxelib setup ~/haxelib
-                haxelib install hxcpp --quiet
+                haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                rm -rf .haxelib/lime
-                git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
-                git -C .haxelib/lime/git fetch --all --tags --prune
-                git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
-                git -C .haxelib/lime/git submodule sync --recursive
-                git -C .haxelib/lime/git submodule update --init --recursive --force
-                haxelib dev lime .haxelib/lime/git
-                rm -rf .haxelib/lime/git/project/obj
-                rm -rf .haxelib/lime/git/ndll
-                haxelib path lime
-                haxelib run lime rebuild cpp -release
-
+                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib run lime rebuild hxcpp windows -clean
+                haxelib run lime rebuild lime windows -clean
+                haxelib run lime rebuild cpp
             - name: Build macOS Intel
               run: haxelib run lime build mac -64 -D ${{inputs.buildFlags}}
 
@@ -272,20 +258,13 @@ jobs:
             - name: Prepare macOS Lime rebuild
               run: |
                 haxelib setup ~/haxelib
-                haxelib install hxcpp --quiet
+                haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
-                haxelib run hxpkg install  
-                rm -rf .haxelib/lime
-                git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
-                git -C .haxelib/lime/git fetch --all --tags --prune
-                git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
-                git -C .haxelib/lime/git submodule sync --recursive
-                git -C .haxelib/lime/git submodule update --init --recursive --force
-                haxelib dev lime .haxelib/lime/git
-                rm -rf .haxelib/lime/git/project/obj
-                rm -rf .haxelib/lime/git/ndll
-                haxelib path lime
-                haxelib run lime rebuild cpp -release
+                haxelib run hxpkg install
+                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib run lime rebuild hxcpp windows -clean
+                haxelib run lime rebuild lime windows -clean
+                haxelib run lime rebuild cpp
             - name: Build macOS ARM
               run: haxelib run lime build mac -arm64 -D ${{inputs.buildFlags}}
 
@@ -314,21 +293,13 @@ jobs:
             - name: Install Haxelib
               run: |
                 haxelib setup ~/haxelib
-                haxelib install hxcpp --quiet
+                haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                rm -rf .haxelib/lime
-                git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
-                git -C .haxelib/lime/git fetch --all --tags --prune
-                git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
-                git -C .haxelib/lime/git submodule sync --recursive
-                git -C .haxelib/lime/git submodule update --init --recursive --force
-                haxelib dev lime .haxelib/lime/git
-                rm -rf .haxelib/lime/git/project/obj
-                rm -rf .haxelib/lime/git/ndll
-                haxelib path lime
-                haxelib run lime rebuild cpp -release
-                haxelib install extension-androidtools
+                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib run lime rebuild hxcpp windows -clean
+                haxelib run lime rebuild lime windows -clean
+                haxelib run lime rebuild cpp
             - name: Install Android SDK + NDK
               uses: android-actions/setup-android@v3
 
@@ -355,20 +326,14 @@ jobs:
             - name: Install Haxelib
               run: |
                 haxelib setup ~/haxelib
-                haxelib install hxcpp --quiet
+                haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                rm -rf .haxelib/lime
-                git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
-                git -C .haxelib/lime/git fetch --all --tags --prune
-                git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
-                git -C .haxelib/lime/git submodule sync --recursive
-                git -C .haxelib/lime/git submodule update --init --recursive --force
-                haxelib dev lime .haxelib/lime/git
-                rm -rf .haxelib/lime/git/project/obj
-                rm -rf .haxelib/lime/git/ndll
-                haxelib path lime
-                haxelib run lime rebuild cpp -release
+                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib run lime rebuild hxcpp windows -clean
+                haxelib run lime rebuild lime windows -clean
+                haxelib run lime rebuild cpp
+
             - name: Build iOS
               run: haxelib run lime build ios -nosign -release -D ${{inputs.buildFlags}}
 
