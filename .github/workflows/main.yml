@@ -52,7 +52,7 @@ jobs:
                 if (Test-Path .haxelib/lime) {
                   Remove-Item -Recurse -Force -LiteralPath .haxelib/lime
                 }
-                Run git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
+                Run git clone https://github.com/ArkoseLabsOfficial/lime .haxelib/lime/git
                 Run git -C .haxelib/lime/git fetch --all --tags --prune
                 Run git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
                 Run git -C .haxelib/lime/git submodule sync --recursive
