@@ -287,9 +287,9 @@ jobs:
         run: |
           FLAGS='${{ inputs.buildFlags }}'
           if [ -z "$FLAGS" ]; then
-            haxelib run lime build ios -nosign -release
+            haxelib run lime build ios -nosign -release -Dlegacy
           else
-            haxelib run lime build ios -nosign -release -D"$FLAGS"
+            haxelib run lime build ios -nosign -release -Dlegacy -D"$FLAGS"
           fi
 
       - name: Upload iOS artifact
