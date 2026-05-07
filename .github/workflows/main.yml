@@ -54,7 +54,7 @@ jobs:
                 }
                 Run git clone https://github.com/ArkoseLabsOfficial/lime .haxelib/lime/git
                 Run git -C .haxelib/lime/git fetch --all --tags --prune
-                Run git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
+                Run git -C .haxelib/lime/git checkout main
                 Run git -C .haxelib/lime/git submodule sync --recursive
                 Run git -C .haxelib/lime/git submodule update --init --recursive --force
                 Run haxelib dev lime .haxelib/lime/git
