@@ -146,7 +146,7 @@ jobs:
                 haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
                 haxelib run lime rebuild hxcpp windows -clean
                 haxelib run lime rebuild lime windows -clean
                 haxelib run lime rebuild cpp
@@ -225,7 +225,7 @@ jobs:
                 haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
                 haxelib run lime rebuild hxcpp windows -clean
                 haxelib run lime rebuild lime windows -clean
                 haxelib run lime rebuild cpp
@@ -261,7 +261,7 @@ jobs:
                 haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
                 haxelib run lime rebuild hxcpp windows -clean
                 haxelib run lime rebuild lime windows -clean
                 haxelib run lime rebuild cpp
@@ -296,7 +296,7 @@ jobs:
                 haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
                 haxelib run lime rebuild hxcpp windows -clean
                 haxelib run lime rebuild lime windows -clean
                 haxelib run lime rebuild cpp
@@ -329,7 +329,7 @@ jobs:
                 haxelib install hxcpp > nul --quiet
                 haxelib install hxpkg --quiet
                 haxelib run hxpkg install
-                haxelib git https://github.com/ArkoseLabsOfficial/lime
+                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
                 haxelib run lime rebuild hxcpp windows -clean
                 haxelib run lime rebuild lime windows -clean
                 haxelib run lime rebuild cpp
