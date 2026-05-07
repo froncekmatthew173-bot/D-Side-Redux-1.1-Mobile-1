@@ -1,344 +1,224 @@
 name: Binaries
 
 on:
-    push:
-        branches: 
-            - main
-    pull_request:
-        branches:
-            - main
-    
-    workflow_dispatch: # Run workflow manually from the actions tab.
-    workflow_call: #For release builds
-        inputs:
-            buildFlags:
-                required: false
-                type: string
-
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      buildFlags:
+        required: false
+        type: string
 
 jobs:
-    Windows:
-        runs-on: windows-latest
+  Windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                submodules: true
-            - uses: krdlab/setup-haxe@master
-              with: 
-                haxe-version: 4.3.7
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
 
-            - name: Prepare Windows Lime rebuild
-              run: |
-                function Run {
-                  $exe = $args[0]
-                  $cmdArgs = @()
-                  if ($args.Length -gt 1) {
-                    $cmdArgs = $args[1..($args.Length - 1)]
-                  }
+      - name: Prepare Windows Lime rebuild
+        shell: pwsh
+        run: |
+          function Run {
+            param([string]$exe, [string[]]$args)
+            Write-Host ">>> $exe $($args -join ' ')"
+            & $exe @args
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Command failed with exit code $LASTEXITCODE"
+              exit $LASTEXITCODE
+            }
+          }
 
-                  Write-Host ">>> $exe $($cmdArgs -join ' ')"
-                  & $exe @cmdArgs
+          Run haxelib setup C:/haxelib
+          Run haxelib install hxcpp --quiet
+          Run haxelib install hxpkg --quiet
+          Run haxelib run hxpkg install
+          Run haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          Run haxelib run lime rebuild cpp -release
 
-                  if ($LASTEXITCODE -ne 0) {
-                    Write-Error "Command failed with exit code ${LASTEXITCODE}: $exe $($cmdArgs -join ' ')"
-                    exit $LASTEXITCODE
-                  }
-                }
-                Run haxelib setup C:/haxelib
-                Run haxelib install hxcpp --quiet
-                Run haxelib install hxpkg --quiet
-                Run haxelib run hxpkg install
-                if (Test-Path .haxelib/lime) {
-                  Remove-Item -Recurse -Force -LiteralPath .haxelib/lime
-                }
-                Run git clone https://github.com/ArkoseLabsOfficial/lime .haxelib/lime/git
-                Run git -C .haxelib/lime/git fetch --all --tags --prune
-                Run git -C .haxelib/lime/git checkout main
-                Run git -C .haxelib/lime/git submodule sync --recursive
-                Run git -C .haxelib/lime/git submodule update --init --recursive --force
-                Run haxelib dev lime .haxelib/lime/git
-                if (Test-Path .haxelib/lime/git/project/obj) {
-                  Remove-Item -Recurse -Force -LiteralPath .haxelib/lime/git/project/obj
-                }
-                if (Test-Path .haxelib/lime/git/ndll) {
-                  Remove-Item -Recurse -Force -LiteralPath .haxelib/lime/git/ndll
-                }
-                Run haxelib path lime
-                Run haxelib run lime rebuild cpp -release
-            - name: Build Windows
-              run: haxelib run lime build windows -D ${{inputs.buildFlags}}
-            - name: Upload Windows artifact
-              uses: actions/upload-artifact@v7.0.0
-              with:
-                name: NightmareVision (Windows)
-                path: export/release/windows/bin
+      - name: Build Windows
+        run: haxelib run lime build windows -release -D${{ inputs.buildFlags }}
 
-    Linux:
-        runs-on: ubuntu-24.04
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (Windows)
+          path: export/release/windows/bin
 
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                submodules: true
-            - uses: krdlab/setup-haxe@master
-              with:
-                haxe-version: 4.3.7
+  Linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-            - name: Install Linux system deps
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y \
-                  build-essential \
-                  gcc-13 \
-                  g++-13 \
-                  vlc \
-                  libvlc-dev \
-                  libvlccore-dev \
-                  vlc-bin \
-                  libwayland-dev \
-                  libwayland-bin \
-                  wayland-protocols \
-                  libasound2-dev \
-                  libpulse-dev \
-                  libjack-jackd2-dev \
-                  libpipewire-0.3-dev \
-                  libgl1-mesa-dev \
-                  libegl1-mesa-dev \
-                  libglu1-mesa-dev \
-                  libdbus-1-dev \
-                  libudev-dev \
-                  libxkbcommon-dev \
-                  libx11-dev \
-                  libxext-dev \
-                  libx11-xcb-dev \
-                  libxfixes-dev \
-                  libxss-dev \
-                  libxrender-dev \
-                  libxrandr-dev \
-                  libxcursor-dev \
-                  libxi-dev \
-                  libxinerama-dev \
-                  libxxf86vm-dev \
-                  libgbm-dev \
-                  libdrm-dev \
-                  libdecor-0-dev \
-                  libvulkan-dev \
-                  pkg-config
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
 
-            - name: Prepare Linux Lime rebuild
-              env:
-                CC: gcc-13
-                CXX: g++-13
-                CPATH: /usr/include/wayland
-                CPLUS_INCLUDE_PATH: /usr/include/wayland
-              run: |
-                set -euo pipefail
-                export CC=gcc-13
-                export CXX=g++-13
-                export CPATH=/usr/include/wayland
-                export CPLUS_INCLUDE_PATH=/usr/include/wayland
-                gcc --version
-                g++ --version
-                $CC --version
-                $CXX --version
-                haxelib setup ~/haxelib
-                haxelib install hxcpp > nul --quiet
-                haxelib install hxpkg --quiet
-                haxelib run hxpkg install
-                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-                haxelib run lime rebuild hxcpp windows -clean
-                haxelib run lime rebuild lime windows -clean
-                haxelib run lime rebuild cpp
-            - name: Rebuild Linux Lime ndll
-              env:
-                CC: gcc-13
-                CXX: g++-13
-                CPATH: /usr/include/wayland
-                CPLUS_INCLUDE_PATH: /usr/include/wayland
-              run: |
-                set -euo pipefail
-                export CC=gcc-13
-                export CXX=g++-13
-                export CPATH=/usr/include/wayland
-                export CPLUS_INCLUDE_PATH=/usr/include/wayland
-                gcc --version
-                g++ --version
-                $CC --version
-                $CXX --version
-                git -C .haxelib/lime/git rev-parse HEAD
-                git -C .haxelib/lime/git submodule status --recursive
-                haxelib path lime
-                ls -la .haxelib/lime/git/ndll || true
-                ls -la .haxelib/lime/git/ndll/Linux64 || true
-                haxelib run lime rebuild cpp -release
-                ls -la .haxelib/lime/git/ndll
-                ls -la .haxelib/lime/git/ndll/Linux64
-                if [ ! -f .haxelib/lime/git/ndll/Linux64/lime.ndll ]; then
-                  echo "ERROR: Missing Lime ndll at .haxelib/lime/git/ndll/Linux64/lime.ndll after rebuild."
-                  exit 1
-                fi
+      - name: Install Linux system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential gcc-13 g++-13 \
+            libasound2-dev libpulse-dev libjack-jackd2-dev \
+            libpipewire-0.3-dev libgl1-mesa-dev libegl1-mesa-dev \
+            libglu1-mesa-dev libdbus-1-dev libudev-dev \
+            libxkbcommon-dev libx11-dev libxext-dev libx11-xcb-dev \
+            libxfixes-dev libxss-dev libxrender-dev libxrandr-dev \
+            libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
+            libgbm-dev libdrm-dev libdecor-0-dev libvulkan-dev \
+            pkg-config
 
-            - name: Build Linux
-              env:
-                CC: gcc-13
-                CXX: g++-13
-                CPATH: /usr/include/wayland
-                CPLUS_INCLUDE_PATH: /usr/include/wayland
-              run: |
-                set -euo pipefail
-                export CC=gcc-13
-                export CXX=g++-13
-                export CPATH=/usr/include/wayland
-                export CPLUS_INCLUDE_PATH=/usr/include/wayland
-                gcc --version
-                g++ --version
-                $CC --version
-                $CXX --version
-                haxelib run lime build Project.xml linux -D ${{inputs.buildFlags}}
+      - name: Prepare Linux Lime rebuild
+        env:
+          CC: gcc-13
+          CXX: g++-13
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
-            - name: Upload Linux artifact
-              uses: actions/upload-artifact@v7.0.0
-              with:
-                name: NightmareVision (Linux)
-                path: 'export/release/linux/bin'
-    MacIntel:
-        runs-on: macos-latest
+      - name: Build Linux
+        env:
+          CC: gcc-13
+          CXX: g++-13
+        run: haxelib run lime build linux -release -D${{ inputs.buildFlags }}
 
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                submodules: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (Linux)
+          path: export/release/linux/bin
 
-            - uses: krdlab/setup-haxe@master
-              with:
-                haxe-version: 4.3.7
+  MacIntel:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-            - name: Install macOS deps
-              run: |
-                brew update
-                brew install pkg-config
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
 
-            - name: Prepare macOS Lime rebuild
-              run: |
-                haxelib setup ~/haxelib
-                haxelib install hxcpp > nul --quiet
-                haxelib install hxpkg --quiet
-                haxelib run hxpkg install
-                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-                haxelib run lime rebuild hxcpp windows -clean
-                haxelib run lime rebuild lime windows -clean
-                haxelib run lime rebuild cpp
-            - name: Build macOS Intel
-              run: haxelib run lime build mac -64 -D ${{inputs.buildFlags}}
+      - name: Install macOS deps
+        run: brew install pkg-config
 
-            - name: Upload macOS Intel artifact
-              uses: actions/upload-artifact@v7.0.0
-              with:
-                name: NightmareVision (macOS-Intel)
-                path: export/release/macos/bin
+      - name: Prepare macOS Lime rebuild
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
-    MacARM:
-        runs-on: macos-latest
+      - name: Build macOS Intel
+        run: haxelib run lime build mac -release -64 -D${{ inputs.buildFlags }}
 
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                submodules: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (macOS-Intel)
+          path: export/release/macos/bin
 
-            - uses: krdlab/setup-haxe@master
-              with:
-                haxe-version: 4.3.7
+  MacARM:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-            - name: Install macOS deps
-              run: |
-                brew update
-                brew install pkg-config
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
 
-            - name: Prepare macOS Lime rebuild
-              run: |
-                haxelib setup ~/haxelib
-                haxelib install hxcpp > nul --quiet
-                haxelib install hxpkg --quiet
-                haxelib run hxpkg install
-                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-                haxelib run lime rebuild hxcpp windows -clean
-                haxelib run lime rebuild lime windows -clean
-                haxelib run lime rebuild cpp
-            - name: Build macOS ARM
-              run: haxelib run lime build mac -arm64 -D ${{inputs.buildFlags}}
+      - name: Install macOS deps
+        run: brew install pkg-config
 
-            - name: Upload macOS ARM artifact
-              uses: actions/upload-artifact@v7.0.0
-              with:
-                name: NightmareVision (macOS-ARM)
-                path: export/release/macos/bin
-    Android:
-        runs-on: ubuntu-24.04
+      - name: Prepare macOS Lime rebuild
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                submodules: true
+      - name: Build macOS ARM
+        run: haxelib run lime build mac -release -arm64 -D${{ inputs.buildFlags }}
 
-            - uses: actions/setup-java@v4
-              with:
-                distribution: temurin
-                java-version: 17
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (macOS-ARM)
+          path: export/release/macos/bin
 
-            - uses: krdlab/setup-haxe@master
-              with:
-                haxe-version: 4.3.7
+  Android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-            - name: Install Haxelib
-              run: |
-                haxelib setup ~/haxelib
-                haxelib install hxcpp > nul --quiet
-                haxelib install hxpkg --quiet
-                haxelib run hxpkg install
-                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-                haxelib run lime rebuild hxcpp windows -clean
-                haxelib run lime rebuild lime windows -clean
-                haxelib run lime rebuild cpp
-            - name: Install Android SDK + NDK
-              uses: android-actions/setup-android@v3
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-            - name: Build Android
-              run: haxelib run lime build android -release -Dlegacy -D ${{inputs.buildFlags}}
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
 
-            - name: Upload Android artifact
-              uses: actions/upload-artifact@v7.0.0
-              with:
-                name: NightmareVision (Android)
-                path: export/release/android/bin/app/build/outputs/apk/release/*.apk
-    iOS:
-        runs-on: macos-latest
+      - name: Install Haxelib
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
 
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                submodules: true
+      - uses: android-actions/setup-android@v3
 
-            - uses: krdlab/setup-haxe@master
-              with:
-                haxe-version: 4.3.7
+      - name: Build Android
+        run: haxelib run lime build android -release -Dlegacy -D${{ inputs.buildFlags }}
 
-            - name: Install Haxelib
-              run: |
-                haxelib setup ~/haxelib
-                haxelib install hxcpp > nul --quiet
-                haxelib install hxpkg --quiet
-                haxelib run hxpkg install
-                haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-                haxelib run lime rebuild hxcpp windows -clean
-                haxelib run lime rebuild lime windows -clean
-                haxelib run lime rebuild cpp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (Android)
+          path: export/release/android/bin/app/build/outputs/apk/release/*.apk
 
-            - name: Build iOS
-              run: haxelib run lime build ios -nosign -release -D ${{inputs.buildFlags}}
+  iOS:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-            - name: Upload iOS artifact
-              uses: actions/upload-artifact@v7.0.0
-              with:
-                name: NightmareVision (iOS)
-                path: export/release/ios/build/Release-iphoneos/*.ipa
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install Haxelib
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+
+      - name: Build iOS
+        run: haxelib run lime build ios -nosign -release -D${{ inputs.buildFlags }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (iOS)
+          path: export/release/ios/build
