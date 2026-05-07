@@ -14,7 +14,7 @@
       },
       {
         "name": "flixel-ui",
-        "link": "https://github.com/FunkinCrew/flixel-ui",
+        "link": "https://github.com/HaxeFlixel/flixel-ui",
         "branch": "main"
       },
       {
