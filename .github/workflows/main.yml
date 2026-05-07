@@ -15,6 +15,7 @@ on:
 jobs:
   Windows:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,36 +25,43 @@ jobs:
         with:
           haxe-version: 4.3.7
 
-      - name: Prepare Windows Lime rebuild
+      - name: Setup haxelib and libraries
         shell: pwsh
         run: |
-          function Run {
-            param([string]$exe, [string[]]$args)
-            Write-Host ">>> $exe $($args -join ' ')"
-            & $exe @args
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "Command failed with exit code $LASTEXITCODE"
-              exit $LASTEXITCODE
-            }
-          }
+          haxelib setup C:/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install json2object --quiet
+          haxelib run hxpkg install
 
-          Run haxelib setup C:/haxelib
-          Run haxelib install hxcpp --quiet
-          Run haxelib install hxpkg --quiet
-          Run haxelib run hxpkg install
-          Run haxelib git lime https://github.com/ArkoseLabsOfficial/lime
-          Run haxelib run lime rebuild cpp -release
+      - name: Prepare Lime (Windows)
+        shell: pwsh
+        run: |
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
       - name: Build Windows
-        run: haxelib run lime build windows -release -D${{ inputs.buildFlags }}
+        shell: pwsh
+        run: |
+          $flags = '${{ inputs.buildFlags }}'
+          if ([string]::IsNullOrWhiteSpace($flags)) {
+            haxelib run lime build windows -release
+          } else {
+            haxelib run lime build windows -release -D$flags
+          }
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
         with:
           name: NightmareVision (Windows)
           path: export/release/windows/bin
 
   Linux:
     runs-on: ubuntu-24.04
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -77,7 +85,7 @@ jobs:
             libgbm-dev libdrm-dev libdecor-0-dev libvulkan-dev \
             pkg-config
 
-      - name: Prepare Linux Lime rebuild
+      - name: Setup haxelib and libraries
         env:
           CC: gcc-13
           CXX: g++-13
@@ -85,7 +93,17 @@ jobs:
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install json2object --quiet
           haxelib run hxpkg install
+
+      - name: Prepare Lime (Linux)
+        env:
+          CC: gcc-13
+          CXX: g++-13
+        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
@@ -93,15 +111,23 @@ jobs:
         env:
           CC: gcc-13
           CXX: g++-13
-        run: haxelib run lime build linux -release -D${{ inputs.buildFlags }}
+        run: |
+          FLAGS='${{ inputs.buildFlags }}'
+          if [ -z "$FLAGS" ]; then
+            haxelib run lime build linux -release
+          else
+            haxelib run lime build linux -release -D"$FLAGS"
+          fi
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
         with:
           name: NightmareVision (Linux)
           path: export/release/linux/bin
 
   MacIntel:
     runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -112,27 +138,44 @@ jobs:
           haxe-version: 4.3.7
 
       - name: Install macOS deps
-        run: brew install pkg-config
+        run: |
+          brew update
+          brew install pkg-config
 
-      - name: Prepare macOS Lime rebuild
+      - name: Setup haxelib and libraries
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install json2object --quiet
           haxelib run hxpkg install
+
+      - name: Prepare Lime (macOS Intel)
+        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
       - name: Build macOS Intel
-        run: haxelib run lime build mac -release -64 -D${{ inputs.buildFlags }}
+        run: |
+          FLAGS='${{ inputs.buildFlags }}'
+          if [ -z "$FLAGS" ]; then
+            haxelib run lime build mac -release -64
+          else
+            haxelib run lime build mac -release -64 -D"$FLAGS"
+          fi
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload macOS Intel artifact
+        uses: actions/upload-artifact@v4
         with:
           name: NightmareVision (macOS-Intel)
           path: export/release/macos/bin
 
   MacARM:
     runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -143,27 +186,44 @@ jobs:
           haxe-version: 4.3.7
 
       - name: Install macOS deps
-        run: brew install pkg-config
+        run: |
+          brew update
+          brew install pkg-config
 
-      - name: Prepare macOS Lime rebuild
+      - name: Setup haxelib and libraries
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install json2object --quiet
           haxelib run hxpkg install
+
+      - name: Prepare Lime (macOS ARM)
+        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
           haxelib run lime rebuild cpp -release
 
       - name: Build macOS ARM
-        run: haxelib run lime build mac -release -arm64 -D${{ inputs.buildFlags }}
+        run: |
+          FLAGS='${{ inputs.buildFlags }}'
+          if [ -z "$FLAGS" ]; then
+            haxelib run lime build mac -release -arm64
+          else
+            haxelib run lime build mac -release -arm64 -D"$FLAGS"
+          fi
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload macOS ARM artifact
+        uses: actions/upload-artifact@v4
         with:
           name: NightmareVision (macOS-ARM)
           path: export/release/macos/bin
 
   Android:
     runs-on: ubuntu-24.04
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -178,26 +238,43 @@ jobs:
         with:
           haxe-version: 4.3.7
 
-      - name: Install Haxelib
+      - name: Setup haxelib and libraries
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install json2object --quiet
           haxelib run hxpkg install
-          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
 
-      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK + NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Prepare Lime (Android)
+        run: |
+          haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
       - name: Build Android
-        run: haxelib run lime build android -release -Dlegacy -D${{ inputs.buildFlags }}
+        run: |
+          FLAGS='${{ inputs.buildFlags }}'
+          if [ -z "$FLAGS" ]; then
+            haxelib run lime build android -release -Dlegacy
+          else
+            haxelib run lime build android -release -Dlegacy -D"$FLAGS"
+          fi
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
         with:
           name: NightmareVision (Android)
           path: export/release/android/bin/app/build/outputs/apk/release/*.apk
 
   iOS:
     runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -207,18 +284,33 @@ jobs:
         with:
           haxe-version: 4.3.7
 
-      - name: Install Haxelib
+      - name: Setup haxelib and libraries
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
           haxelib install hxpkg --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install json2object --quiet
           haxelib run hxpkg install
+
+      - name: Prepare Lime (iOS)
+        run: |
           haxelib git lime https://github.com/ArkoseLabsOfficial/lime
+          haxelib run lime rebuild cpp -release
 
       - name: Build iOS
-        run: haxelib run lime build ios -nosign -release -D${{ inputs.buildFlags }}
+        run: |
+          FLAGS='${{ inputs.buildFlags }}'
+          if [ -z "$FLAGS" ]; then
+            haxelib run lime build ios -nosign -release
+          else
+            haxelib run lime build ios -nosign -release -D"$FLAGS"
+          fi
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
         with:
           name: NightmareVision (iOS)
           path: export/release/ios/build
