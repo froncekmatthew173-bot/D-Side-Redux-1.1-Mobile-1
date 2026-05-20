@@ -267,3 +267,95 @@ jobs:
         with:
           name: NightmareVision (Linux)
           path: export/release/linux/bin
+  macOS-ARM64:
+    name: Build macOS (ARM64)
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v2.0.2
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install Haxelib + Prepare Lime
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+
+          rm -rf .haxelib/lime
+          git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
+          git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
+          git -C .haxelib/lime/git submodule update --init --recursive --force
+          haxelib dev lime .haxelib/lime/git
+
+      - name: Rebuild Lime for macOS ARM64
+        run: |
+          haxelib run lime rebuild macos -release -clean
+          if [ ! -f ".haxelib/lime/git/ndll/Mac64/lime.ndll" ]; then
+            echo "ERROR: Lime macOS ndll missing"
+            exit 1
+          fi
+
+      - name: Build macOS (ARM64)
+        run: |
+          haxelib run lime build macos -release -D HXCPP_ARM64 -D ${{ inputs.buildFlags }}
+
+      - name: Upload macOS ARM64 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (macOS ARM64)
+          path: export/release/macos/bin
+          if-no-files-found: error
+  macOS-Intel:
+    name: Build macOS (Intel)
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v2.0.2
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install Haxelib + Prepare Lime
+        run: |
+          haxelib setup ~/haxelib
+          haxelib install hxcpp --quiet
+          haxelib install hxpkg --quiet
+          haxelib run hxpkg install
+
+          rm -rf .haxelib/lime
+          git clone https://github.com/FunkinCrew/lime .haxelib/lime/git
+          git -C .haxelib/lime/git checkout 6421de16b9dfa4fb55c19f12db65d392a57585c8
+          git -C .haxelib/lime/git submodule update --init --recursive --force
+          haxelib dev lime .haxelib/lime/git
+
+      - name: Rebuild Lime for macOS Intel
+        run: |
+          haxelib run lime rebuild macos -release -clean
+          if [ ! -f ".haxelib/lime/git/ndll/Mac64/lime.ndll" ]; then
+            echo "ERROR: Lime macOS ndll missing"
+            exit 1
+          fi
+
+      - name: Build macOS (Intel)
+        run: |
+          haxelib run lime build macos -release -D HXCPP_M64 -D ${{ inputs.buildFlags }}
+
+      - name: Upload macOS Intel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NightmareVision (macOS Intel)
+          path: export/release/macos/bin
+          if-no-files-found: error
