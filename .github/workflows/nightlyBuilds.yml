@@ -95,7 +95,7 @@ jobs:
           name: NightmareVision (Android)
           path: export/release/android/bin/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
-  iOS:
+   iOS:
     name: Build iOS
     runs-on: macos-latest
 
