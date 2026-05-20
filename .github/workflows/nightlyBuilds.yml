@@ -267,7 +267,7 @@ jobs:
         with:
           name: NightmareVision (Linux)
           path: export/release/linux/bin
-  macOS-ARM64:
+   macOS-ARM64:
     name: Build macOS (ARM64)
     runs-on: macos-14
 
@@ -313,7 +313,7 @@ jobs:
           name: NightmareVision (macOS ARM64)
           path: export/release/macos/bin
           if-no-files-found: error
-  macOS-Intel:
+   macOS-Intel:
     name: Build macOS (Intel)
     runs-on: macos-13
 
